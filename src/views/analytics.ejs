@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lead Analytics</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .card {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .metric {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 0;
+            border-bottom: 1px solid #eee;
+        }
+        .metric:last-child {
+            border-bottom: none;
+        }
+        .value {
+            font-size: 24px;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+        h1 {
+            color: #2c3e50;
+            text-align: center;
+        }
+        .refresh {
+            display: block;
+            width: 100%;
+            padding: 10px;
+            background: #3498db;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-top: 20px;
+        }
+        .refresh:hover {
+            background: #2980b9;
+        }
+    </style>
+</head>
+<body>
+    <h1>Lead Analytics Dashboard</h1>
+    
+    <div class="card">
+        <div class="metric">
+            <span>Total Leads Captured</span>
+            <span class="value"><%= analytics.totalLeads %></span>
+        </div>
+        <div class="metric">
+            <span>Total Calls Made</span>
+            <span class="value"><%= analytics.calledLeads %></span>
+        </div>
+    </div>
+
+    <button class="refresh" onclick="window.location.reload()">
+        Refresh Analytics
+    </button>
+</body>
+</html>
