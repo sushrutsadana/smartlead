@@ -2,6 +2,7 @@ from fastapi import APIRouter, HTTPException, Request
 from fastapi.exceptions import RequestValidationError
 from ..schemas.lead import LeadCreate, Activity
 from ..services.lead_service import LeadService
+from ..services.email_processor import EmailProcessor
 import logging
 
 # Set up logging
@@ -31,4 +32,14 @@ async def create_activity(lead_id: str, activity: Activity):
         return {"status": "success", "data": activity_record}
     except Exception as e:
         logger.error(f"Error in create_activity: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.post("/process-emails")
+async def process_emails():
+    try:
+        processor = EmailProcessor()
+        result = await processor.process_new_emails()
+        return {"status": "success", "message": result}
+    except Exception as e:
+        logger.error(f"Error processing emails: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e)) 
