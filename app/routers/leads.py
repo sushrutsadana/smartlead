@@ -3,6 +3,8 @@ from fastapi.exceptions import RequestValidationError
 from ..schemas.lead import LeadCreate, Activity
 from ..services.lead_service import LeadService
 from ..services.email_processor import EmailProcessor
+from ..services.call_service import CallService
+from datetime import datetime
 import logging
 
 # Set up logging
@@ -43,3 +45,35 @@ async def process_emails():
     except Exception as e:
         logger.error(f"Error processing emails: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e)) 
+
+@router.post("/{lead_id}/call")
+async def make_call_to_lead(lead_id: str):
+    try:
+        # Get lead's phone number from database
+        lead = await LeadService.get_lead(lead_id)
+        if not lead.get('phone_number'):
+            raise HTTPException(status_code=400, detail="Lead has no phone number")
+
+        # Make the call
+        call_service = CallService()
+        result = await call_service.make_call(
+            phone_number=lead['phone_number'],
+            first_name=lead['first_name'],
+            last_name=lead['last_name'],
+            company_name=lead.get('company_name'),
+            title=lead.get('title')
+        )
+
+        # Log activity
+        activity_data = {
+            "lead_id": lead_id,
+            "activity_type": "call_made",
+            "body": "Automated call initiated",
+            "activity_datetime": datetime.now().isoformat()
+        }
+        await LeadService.log_activity(activity_data)
+
+        return {"status": "success", "data": result}
+    except Exception as e:
+        logger.error(f"Error initiating call: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))

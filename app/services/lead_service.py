@@ -33,4 +33,15 @@ class LeadService:
             return result.data[0]
         except Exception as e:
             logger.error(f"Error in log_activity: {str(e)}")
+            raise
+
+    @staticmethod
+    async def get_lead(lead_id: str) -> dict:
+        try:
+            result = supabase.table("leads").select("*").eq("id", lead_id).execute()
+            if not result.data:
+                raise Exception(f"Lead with ID {lead_id} not found")
+            return result.data[0]
+        except Exception as e:
+            logger.error(f"Error getting lead: {str(e)}")
             raise 

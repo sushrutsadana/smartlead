@@ -14,6 +14,9 @@ class Settings(BaseSettings):
     # Claude/Anthropic settings
     ANTHROPIC_API_KEY: str
     
+    # Bland AI settings
+    BLAND_AI_API_KEY: str  # Remove BLAND_AI_ORG_ID
+    
     class Config:
         env_file = ".env"
 
