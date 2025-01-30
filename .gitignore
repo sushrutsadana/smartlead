@@ -37,3 +37,5 @@ env/
 *.log
 .coverage
 htmlcov/ 
+
+.frontend documentation

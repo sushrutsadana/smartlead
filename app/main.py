@@ -4,6 +4,7 @@ from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 from .routers import leads
 import logging
+import os
 
 # Set up logging
 logging.basicConfig(level=logging.INFO)
@@ -23,7 +24,7 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
 # CORS middleware configuration
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # In production, replace with specific origins
+    allow_origins=["your-frontend-domain.vercel.app"],  # Update this
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -31,6 +32,8 @@ app.add_middleware(
 
 # Include routers
 app.include_router(leads.router)
+
+BASE_URL = os.getenv('VERCEL_URL', 'http://localhost:8000')
 
 @app.get("/")
 async def root():

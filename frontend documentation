@@ -1,0 +1,195 @@
+1. API Endpoints Documentation
+
+// Base URL: http://localhost:8000
+
+// Types
+interface Lead {
+  id: string;
+  first_name: string;
+  last_name: string;
+  email: string;
+  phone_number?: string;
+  company_name?: string;
+  title?: string;
+  lead_source: string;
+  status: string;
+  created_at: string;
+}
+
+interface Activity {
+  id: string;
+  lead_id: string;
+  activity_type: 'EMAIL_SENT' | 'CALL_MADE' | 'LEAD_CREATED';
+  body: string;
+  activity_datetime: string;
+}
+
+// API Endpoints
+
+// 1. Create Lead
+POST /leads
+Body: {
+  first_name: string;
+  last_name: string;
+  email: string;
+  phone_number?: string;
+  company_name?: string;
+  title?: string;
+  lead_source?: string;
+  status?: string;
+}
+Response: {
+  status: "success";
+  data: Lead;
+}
+
+// 2. Log Activity
+POST /leads/{lead_id}/activities
+Body: {
+  activity_type: 'EMAIL_SENT' | 'CALL_MADE' | 'LEAD_CREATED';
+  body: string;
+  activity_datetime: string;
+}
+Response: {
+  status: "success";
+  data: Activity;
+}
+
+// 3. Process Emails
+POST /leads/process-emails
+Response: {
+  status: "success";
+  message: string;
+}
+
+// 4. Make Call
+POST /leads/{lead_id}/call
+Response: {
+  status: "success";
+  data: {
+    call_id: string;
+    status: string;
+    // ... other call details
+  }
+}
+
+2. Supabase Direct Access
+// Install Supabase client
+npm install @supabase/supabase-js
+
+// Initialize Supabase
+import { createClient } from '@supabase/supabase-js'
+
+const supabase = createClient(
+  'https://wftvunhclthuwcsnxxmt.supabase.co',
+  'your-anon-key'  // Use anon key for frontend
+)
+
+// Example queries
+// Get all leads
+const { data: leads, error } = await supabase
+  .from('leads')
+  .select('*')
+
+// Get lead with activities
+const { data: lead, error } = await supabase
+  .from('leads')
+  .select(`
+    *,
+    activities (*)
+  `)
+  .eq('id', leadId)
+  .single()
+
+  // Suggested pages/components
+3. Example Frontend Structure
+src/
+├── pages/
+│   ├── Dashboard.tsx         // Overview of leads and activities
+│   ├── LeadsList.tsx        // List all leads
+│   ├── LeadDetail.tsx       // Single lead view with activities
+│   ├── EmailProcessor.tsx   // Email processing interface
+│   └── CallCenter.tsx       // Manage automated calls
+│
+├── components/
+│   ├── LeadCard.tsx         // Lead summary component
+│   ├── ActivityList.tsx     // List of activities
+│   ├── CreateLeadForm.tsx   // Form to create new lead
+│   └── CallButton.tsx       // Button to trigger calls
+│
+├── services/
+│   ├── api.ts              // API calls
+│   └── supabase.ts         // Supabase client
+│
+└── types/
+    └── index.ts            // TypeScript interfaces
+
+4. Example API Service
+
+// services/api.ts
+const API_BASE = 'http://localhost:8000';
+
+export const api = {
+  // Create new lead
+  createLead: async (leadData: Partial<Lead>) => {
+    const response = await fetch(`${API_BASE}/leads`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(leadData)
+    });
+    return response.json();
+  },
+
+  // Make call to lead
+  callLead: async (leadId: string) => {
+    const response = await fetch(`${API_BASE}/leads/${leadId}/call`, {
+      method: 'POST'
+    });
+    return response.json();
+  },
+
+  // Process emails
+  processEmails: async () => {
+    const response = await fetch(`${API_BASE}/leads/process-emails`, {
+      method: 'POST'
+    });
+    return response.json();
+  }
+};
+
+5. Example Component
+
+// components/LeadsList.tsx
+import { useEffect, useState } from 'react';
+import { supabase } from '../services/supabase';
+
+export const LeadsList = () => {
+  const [leads, setLeads] = useState<Lead[]>([]);
+
+  useEffect(() => {
+    const fetchLeads = async () => {
+      const { data, error } = await supabase
+        .from('leads')
+        .select('*')
+        .order('created_at', { ascending: false });
+      
+      if (data) setLeads(data);
+    };
+
+    fetchLeads();
+  }, []);
+
+  return (
+    <div>
+      {leads.map(lead => (
+        <div key={lead.id}>
+          <h3>{lead.first_name} {lead.last_name}</h3>
+          <p>{lead.email}</p>
+          <button onClick={() => api.callLead(lead.id)}>
+            Make Call
+          </button>
+        </div>
+      ))}
+    </div>
+  );
+};
